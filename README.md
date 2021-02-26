@@ -17,7 +17,7 @@ conda activate desktop_notifier
 
 1. Visit this link and click on the button "Enable the Google Calendar API"
 
-2. In resulting dialog click DOWNLOAD CLIENT CONFIGURATION and save the file credentials.json to your working directory.
+2. In resulting dialog click DOWNLOAD CLIENT CONFIGURATION and save the file credentials.json to the project directory.
 
 ## Instructions to use the application
 
