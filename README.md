@@ -9,7 +9,7 @@ The script desktop_notification.py authenticates into a Google calendar and prov
 ```bash
 git clone 
 cd desktop_notifier
-conda create -f environment.yml
+conda env create -f environment.yml
 conda activate desktop_notifier
 ```
 
@@ -28,5 +28,3 @@ python desktop_notifier.py [TIME_BEFORE_EVENT_MIN]
 ## Limitations
 
 * Only tested in MacOS BigSur and Windows 10;
-* The plyer library is difficult to install in MacOS BigSur;
-* If an event is canceled in the calendar, the notification is not cancelled.

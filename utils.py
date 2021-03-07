@@ -1,6 +1,5 @@
 import datetime
 import time
-import requests
 import os.path
 import pickle
 import platform
@@ -14,12 +13,21 @@ from plyer import notification
 
 SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
 
-def get_events():
-    """Returns the 10 next events on Google Calendar
+def event_exists(event_id):
 
-    Returns:
-        list: list of events
-    """
+    creds = get_gcalendar_creds()
+    service = build('calendar', 'v3', credentials=creds)
+    
+    event = service.events().get(calendarId='primary', eventId=event_id).execute()
+
+    if event['status'] == 'cancelled':
+        return False
+    else:
+        return True
+
+
+def get_gcalendar_creds():
+    
     creds = None
     # The file token.pickle stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
@@ -38,7 +46,16 @@ def get_events():
         # Save the credentials for the next run
         with open('token.pickle', 'wb') as token:
             pickle.dump(creds, token)
+    
+    return creds
 
+def get_events():
+    """Returns the 10 next events on Google Calendar
+
+    Returns:
+        list: list of events
+    """
+    creds = get_gcalendar_creds()
     service = build('calendar', 'v3', credentials=creds)
 
     # Call the Calendar API
@@ -99,26 +116,37 @@ def notify(event, time_before_event_min=1):
     """
     start, summary = get_event_info(event)
 
+    formatted_start_time = ''.join([
+        start[:10],
+        ' ',
+        start[11:16],
+    ])
+
+
+
+    event_id = event['id']
+    
     time_to_notification = (string_to_datetime(start) 
         - datetime.datetime.now() 
         - datetime.timedelta(minutes=time_before_event_min)
     )
-    
+
     if time_to_notification.total_seconds() > 0:
         time.sleep(time_to_notification.total_seconds())
+        
+        if event_exists(event_id):
+            if platform.system()=='Darwin':
 
-        if platform.system=='Darwin':
-
-            os.system("""
+                os.system("""
                     osascript -e 'display notification "{}" with title "{}"'
-                    """.format(start, summary))
-        else:
+                    """.format(formatted_start_time, summary))
+            else:
 
-            notification.notify(
-                title=summary,
-                message=start,
-                timeout=2
-            )
+                notification.notify(
+                    title=summary,
+                    message=formatted_start_time,
+                    timeout=2
+                )
 
 def check_new_events(q, jobs_to_do):
     while True:
